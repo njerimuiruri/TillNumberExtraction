@@ -9,20 +9,21 @@ import {
   SafeAreaView,
   Dimensions,
   ActivityIndicator,
+  StatusBar,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'expo-camera';
 import * as SecureStore from 'expo-secure-store';
 import { MaterialIcons } from '@expo/vector-icons';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const ImagePickerComponent = () => {
-  const [image, setImage] = useState(null);
-  const [isFirstLaunch, setIsFirstLaunch] = useState(true);
-  const [cameraPermission, setCameraPermission] = useState(null);
-  const [galleryPermission, setGalleryPermission] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [image, setImage] = useState<string | null>(null);
+  const [isFirstLaunch, setIsFirstLaunch] = useState<boolean>(true);
+  const [cameraPermission, setCameraPermission] = useState<boolean | null>(null);
+  const [galleryPermission, setGalleryPermission] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     checkIfFirstLaunch();
@@ -57,11 +58,9 @@ const ImagePickerComponent = () => {
   };
 
   const requestPermissionsSequentially = async () => {
-    // Camera permission
     const cameraResult = await Camera.requestCameraPermissionsAsync();
     setCameraPermission(cameraResult.status === 'granted');
 
-    // Gallery permission
     const galleryResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     setGalleryPermission(galleryResult.status === 'granted');
 
@@ -144,80 +143,107 @@ const ImagePickerComponent = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Image Picker</Text>
-      
-      <View style={styles.imageContainer}>
-        {loading ? (
-          <ActivityIndicator size="large" color="#007AFF" />
-        ) : image ? (
-          <Image source={{ uri: image }} style={styles.image} />
-        ) : (
-          <View style={styles.placeholder}>
-            <MaterialIcons name="add-photo-alternate" size={50} color="#666" />
-            <Text style={styles.placeholderText}>
-              Take a photo or choose from gallery
-            </Text>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" />
+      <View style={styles.container}>
+        <View style={styles.headerContainer}>
+          <Text style={styles.title}>Image Picker</Text>
+        </View>
+
+        <View style={styles.contentContainer}>
+          <View style={styles.imageContainer}>
+            {loading ? (
+              <ActivityIndicator size="large" color="#007AFF" />
+            ) : image ? (
+              <Image source={{ uri: image }} style={styles.image} />
+            ) : (
+              <View style={styles.placeholder}>
+                <MaterialIcons name="add-photo-alternate" size={50} color="#666" />
+                <Text style={styles.placeholderText}>
+                  Take a photo or choose from gallery
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={[styles.button, styles.cameraButton]}
+              onPress={launchCamera}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="camera-alt" size={24} color="white" />
+              <Text style={styles.buttonText}>Camera</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.button, styles.galleryButton]}
+              onPress={launchGallery}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="photo-library" size={24} color="white" />
+              <Text style={styles.buttonText}>Gallery</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {(!cameraPermission || !galleryPermission) && (
+          <View style={styles.footerContainer}>
+            <TouchableOpacity 
+              style={styles.settingsButton}
+              onPress={() => ImagePicker.openSettings()}
+            >
+              <MaterialIcons name="settings" size={20} color="#007AFF" />
+              <Text style={styles.settingsText}>
+                Enable permissions in settings
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={[styles.button, styles.cameraButton]}
-          onPress={launchCamera}
-          activeOpacity={0.7}
-        >
-          <MaterialIcons name="camera-alt" size={24} color="white" />
-          <Text style={styles.buttonText}>Camera</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.button, styles.galleryButton]}
-          onPress={launchGallery}
-          activeOpacity={0.7}
-        >
-          <MaterialIcons name="photo-library" size={24} color="white" />
-          <Text style={styles.buttonText}>Gallery</Text>
-        </TouchableOpacity>
-      </View>
-
-      {(!cameraPermission || !galleryPermission) && (
-        <TouchableOpacity 
-          style={styles.settingsButton}
-          onPress={() => ImagePicker.openSettings()}
-        >
-          <MaterialIcons name="settings" size={20} color="#007AFF" />
-          <Text style={styles.settingsText}>
-            Enable permissions in settings
-          </Text>
-        </TouchableOpacity>
-      )}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  headerContainer: {
+    paddingTop: 60, // Increased top padding
+    paddingBottom: 20,
     alignItems: 'center',
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e1e1e1',
+  },
+  contentContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 40, // Added more space at the top
+    alignItems: 'center',
+  },
+  footerContainer: {
     padding: 20,
+    alignItems: 'center',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 20,
-    textAlign: 'center',
   },
   imageContainer: {
     width: width - 40,
-    aspectRatio: 4/3,
+    height: height * 0.4, // Made height relative to screen height
     backgroundColor: '#fff',
     borderRadius: 15,
     overflow: 'hidden',
-    marginBottom: 20,
+    marginBottom: 40, // Increased bottom margin
     elevation: 5,
     shadowColor: '#000',
     shadowOffset: {
@@ -232,6 +258,7 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+    resizeMode: 'cover',
   },
   placeholder: {
     flex: 1,
@@ -282,8 +309,17 @@ const styles = StyleSheet.create({
   settingsButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
-    padding: 10,
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
   },
   settingsText: {
     color: '#007AFF',
@@ -291,5 +327,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
 
 export default ImagePickerComponent;
