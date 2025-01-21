@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   headerContainer: {
-    paddingTop: 60, // Increased top padding
+    paddingTop: 60, 
     paddingBottom: 20,
     alignItems: 'center',
     backgroundColor: '#fff',
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 40, // Added more space at the top
+    paddingTop: 40, 
     alignItems: 'center',
   },
   footerContainer: {
@@ -239,11 +239,11 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: width - 40,
-    height: height * 0.4, // Made height relative to screen height
+    height: height * 0.4, 
     backgroundColor: '#fff',
     borderRadius: 15,
     overflow: 'hidden',
-    marginBottom: 40, // Increased bottom margin
+    marginBottom: 40, 
     elevation: 5,
     shadowColor: '#000',
     shadowOffset: {
